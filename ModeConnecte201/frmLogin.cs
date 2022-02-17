@@ -8,11 +8,16 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
+using System.Configuration;
 
 namespace ModeConnecte201
 {
+ 
     public partial class frmLogin : Form
-    {
+    {  
+        private byte[] cle = System.Convert.FromBase64String("12UCgcnHy8LHoN/VodosrUVgv+r+kQ5e");
+    private byte[] iv = System.Convert.FromBase64String("AsJNO9N/4dM=");
+
         public frmLogin()
         {
             InitializeComponent();
@@ -34,9 +39,36 @@ namespace ModeConnecte201
             return Convert.ToBase64String(hash);
 
         }
+
+        public string DecryptSym(byte[] cryptedTextAsByte, byte[] key, byte[] iv)
+        {
+            TripleDESCryptoServiceProvider TDES = new TripleDESCryptoServiceProvider();
+
+            // Cet objet est utilisé pour déchiffrer les données.
+            // Il reçoit les données chiffrées sous la forme d'un tableau de bytes.
+            // Les données déchiffrées sont également retournées sous la forme d'un tableau de bytes
+            var decryptor = TDES.CreateDecryptor(key, iv);
+
+            byte[] decryptedTextAsByte = decryptor.TransformFinalBlock(cryptedTextAsByte, 0, cryptedTextAsByte.Length);
+
+            return Encoding.Default.GetString(decryptedTextAsByte);
+        }
+
+
+
         private void btnSeConnecter_Click(object sender, EventArgs e)
         {
-            SqlConnection cn = new SqlConnection(@"data source=.\sqlexpress2008;initial catalog=librairie;user id=sa;password=P@ssw0rd;");
+            string cs = ConfigurationManager.ConnectionStrings["librairieConnectionString"].ConnectionString;
+            string[] t = cs.Split(';');
+            string pass = t[3];
+            pass = pass.Replace(" ", "");
+            pass = pass.Substring(9);
+
+            cs = t[0] + ";" + t[1] + ";" + t[2] + ";password=" + DecryptSym(System.Convert.FromBase64String(pass), cle, iv);
+            
+            
+            
+            SqlConnection cn = new SqlConnection(cs);
             cn.Open();
             string req = "select * from utilisateur where login ='"+ txtLogin.Text+"' ";
             SqlCommand com = new SqlCommand(req, cn);

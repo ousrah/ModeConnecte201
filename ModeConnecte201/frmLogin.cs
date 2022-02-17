@@ -8,7 +8,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
+using System.IO;
 using System.Configuration;
+using Newtonsoft.Json;
 
 namespace ModeConnecte201
 {
@@ -58,17 +60,26 @@ namespace ModeConnecte201
 
         private void btnSeConnecter_Click(object sender, EventArgs e)
         {
-            string cs = ConfigurationManager.ConnectionStrings["librairieConnectionString"].ConnectionString;
-            string[] t = cs.Split(';');
-            string pass = t[3];
-            pass = pass.Replace(" ", "");
-            pass = pass.Substring(9);
+            /*    string cs = ConfigurationManager.ConnectionStrings["librairieConnectionString"].ConnectionString;
+                string[] t = cs.Split(';');
+                string pass = t[3];
+                pass = pass.Replace(" ", "");
+                pass = pass.Substring(9);
 
-            cs = t[0] + ";" + t[1] + ";" + t[2] + ";password=" + DecryptSym(System.Convert.FromBase64String(pass), cle, iv);
-            
-            
-            
-            SqlConnection cn = new SqlConnection(cs);
+                cs = t[0] + ";" + t[1] + ";" + t[2] + ";password=" + DecryptSym(System.Convert.FromBase64String(pass), cle, iv);
+              */
+
+            StreamReader sr = new StreamReader("config.cfg");
+            string p = sr.ReadToEnd();
+            config c = JsonConvert.DeserializeObject<config>(p);
+            sr.Close();
+
+            MessageBox.Show("bienvenu dans " + c.name + " version : " + c.version);
+
+            String newCs = DecryptSym(System.Convert.FromBase64String(c.cs), cle, iv);
+
+
+            SqlConnection cn = new SqlConnection(newCs);
             cn.Open();
             string req = "select * from utilisateur where login ='"+ txtLogin.Text+"' ";
             SqlCommand com = new SqlCommand(req, cn);

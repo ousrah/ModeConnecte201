@@ -60,6 +60,8 @@ namespace ModeConnecte201
 
         private void btnSeConnecter_Click(object sender, EventArgs e)
         {
+
+            //utilisation du fichier de configuration app.config
             /*    string cs = ConfigurationManager.ConnectionStrings["librairieConnectionString"].ConnectionString;
                 string[] t = cs.Split(';');
                 string pass = t[3];
@@ -69,6 +71,8 @@ namespace ModeConnecte201
                 cs = t[0] + ";" + t[1] + ";" + t[2] + ";password=" + DecryptSym(System.Convert.FromBase64String(pass), cle, iv);
               */
 
+
+            //utilisation d'un fichier de configuration propre a nous
             StreamReader sr = new StreamReader("config.cfg");
             string p = sr.ReadToEnd();
             config c = JsonConvert.DeserializeObject<config>(p);
